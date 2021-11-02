@@ -6,7 +6,16 @@ var qs = require('querystring');
 var template = require('./lib/template.js');
 var path = require('path');
 var sanitizeHtml = require('sanitize-html');
+var mysql = require('mysql');
 
+var db = mysql.createConnection({
+	host : 'localhost',
+	user : 'root',
+	password : 'password',
+	database : 'opentutorials'	
+});
+
+db.connect();
 
 var app = http.createServer(function(request,response){
 	var _url = request.url;
@@ -15,13 +24,15 @@ var app = http.createServer(function(request,response){
 	//맨 첫 페이지 -> 아무것도 안눌렀을때
   if(pathname === '/'){
   	if(queryData.id === undefined){
-      fs.readdir('../data', function(error, filelist){
-        var title = 'Welcome';
+			db.query("select * from topic", function(error, topics){
+				console.log(topics);
+				var title = 'Welcome';
         var description = 'Hello, Node.js';
-        var list = template.list(filelist);
+				var list = template.list(topics);
 				var html = template.HTML(title, list, `<h2>${description}</h2>`, `<a href="/create">create</a>`);
 				response.writeHead(200);
         response.end(html);
+				response.end('Success');
 			});
 		}
 		

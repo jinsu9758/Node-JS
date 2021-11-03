@@ -12,6 +12,8 @@ module.exports = {
 							<h1><a href="/">WEB</a></h1>
 							${list}
 							${control}
+							
+							<h1>${title}</h1>
 							${body}
 						</body>
 						</html>

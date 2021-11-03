@@ -63,10 +63,10 @@ var app = http.createServer(function(request,response){
 	
 	// 글쓰기 페이지 들어갈 때 
 	else if(pathname === "/create"){
-		fs.readdir('../data', function(error, filelist){
-			var title = 'Web - create';
-      //var description = 'Hello, Node.js';
-      var list = template.list(filelist);
+		db.query("select * from topic", function(error, topics){
+			//console.log(topics);
+			var title = 'Create';
+			var list = template.list(topics);
 			var html = template.HTML(title, list, `
 			<form action="/create_process" method="post">
 				<p>
@@ -78,7 +78,7 @@ var app = http.createServer(function(request,response){
 				<p>
 					<input type="submit" name="submit">
 				</p>
-			</form>`, '');
+			</form>`, `<a href="/create">create</a>`);
 			response.writeHead(200);
       response.end(html);
 		});
@@ -95,14 +95,12 @@ var app = http.createServer(function(request,response){
 		//들어올 data가 없으면 요고 실행
 		request.on('end', function(){
 			var post = qs.parse(body); //post 정보 저장
-			//console.log(post.title);
-			//console.log(post.description);
-			var title = post.title;
-			var description = post.description;
-			
-			fs.writeFile(`../data/${title}`, description, 'utf8', function(err){
-				response.writeHead(302, {Location:`/?id=${title}`}); //페이지 redirection
-				response.end('success');
+			db.query(`insert into topic(title, description,created, author_id) values(?, ?, NOW(), ?)`, [post.title, post.description, 1], function(error, result){
+				if(error){
+					throw error;
+				}
+				response.writeHead(302, {Location:`/?id=${result.insertId}`});
+				response.end();
 			})
 		});
 	}

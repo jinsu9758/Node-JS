@@ -25,38 +25,40 @@ var app = http.createServer(function(request,response){
   if(pathname === '/'){
   	if(queryData.id === undefined){
 			db.query("select * from topic", function(error, topics){
-				console.log(topics);
+				//console.log(topics);
 				var title = 'Welcome';
         var description = 'Hello, Node.js';
 				var list = template.list(topics);
 				var html = template.HTML(title, list, `<h2>${description}</h2>`, `<a href="/create">create</a>`);
 				response.writeHead(200);
         response.end(html);
-				response.end('Success');
 			});
 		}
 		
 		//id가 존재할때
 		else{
-			fs.readdir('../data', function(error, filelist){
-				var filteredId = path.parse(queryData.id).base;
-				fs.readFile(`../data/${filteredId}`, 'utf8', function(err, description){
-					var title = queryData.id;
-					var sanitizedTitle = sanitizeHtml(title);
-					var sanitizedDescription = sanitizeHtml(description);
-					var list = template.list(filelist);
-					var html = template.HTML(sanitizedTitle, list, `<h2>${sanitizedDescription}</h2>`, `<a href="/create">create</a>
-					<a href="/update?id=${sanitizedTitle}">update</a>
-					<form action="delete_process" method="post">
-						<input type="hidden" name="id" value="${sanitizedTitle}">
-						<input type="submit" value="delete">
-					</form>`);
+			db.query("select * from topic", function(error, topics){
+				if(error){
+					throw error;
+				}
+				db.query(`select * from topic where id=?`, [queryData.id], function(error2, topic){
+					if(error2){
+						throw error2;
+					}
+					var title = topic[0].title;
+					var description = topic[0].description;
+					var list = template.list(topics);
+					var html = template.HTML(title, list, `<h2>${description}</h2>`, `<a href="/create">create</a>
+                <a href="/update?id=${queryData.id}">update</a>
+                <form action="delete_process" method="post">
+                  <input type="hidden" name="id" value="${queryData.id}">
+                  <input type="submit" value="delete">
+                </form>`);
 					response.writeHead(200);
-        	response.end(html);
+					response.end(html);
 				});
 			});
 		}
-		
 	}
 	
 	// 글쓰기 페이지 들어갈 때 

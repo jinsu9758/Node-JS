@@ -107,24 +107,28 @@ var app = http.createServer(function(request,response){
 	
 	// 작성된 글 수정페이지 들어가기
 	else if(pathname === "/update") {
-		fs.readdir('../data', function(error, filelist){
-			var filteredId = path.parse(queryData.id).base;
-			fs.readFile(`../data/${filteredId}`, 'utf8', function(err, description){
-				var title = queryData.id;
-				var list = template.list(filelist);
-				var html = template.HTML(title, list, `
+		db.query(`select * from topic`, function(error, topics){
+			if(error){
+				throw error;
+			}
+			db.query(`select * from topic where id=?`, [queryData.id], function(error2, topic){
+				if(error2){
+					throw error2;
+				}
+				var list = template.list(topics);
+				var html = template.HTML(topic[0].title, list, `
 				<form action="/update_process" method="post">
-				<input type="hidden" name="id" value="${title}"> // 수정되기 전 id값
+				<input type="hidden" name="id" value="${topic[0].id}">
 				<p>
-				<input type="text" name="title" placeholder="title" value="${title}"> // 수정된 후
+				<input type="text" name="title" placeholder="title" value="${topic[0].title}"> // 수정된 후
 				</p>
 				<p>
-					<textarea name="description" placeholder="description">${description}</textarea>
+					<textarea name="description" placeholder="description">${topic[0].description}</textarea>
 				</p>
 				<p>
 					<input type="submit" name="submit">
 				</p>
-			</form>`, `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`);
+			</form>`, `<a href="/create">create</a> <a href="/update?id=${topic[0].id}">update</a>`)
 				response.writeHead(200);
         response.end(html);
 			});
@@ -142,18 +146,14 @@ var app = http.createServer(function(request,response){
 		//들어올 data가 없으면 요고 실행
 		request.on('end', function(){
 			var post = qs.parse(body); //post 정보 저장
-			//console.log(post.title);
-			//console.log(post.description);
-			var id = post.id;
-			var title = post.title;
-			var description = post.description;
+			db.query(`update topic set title=?, description=?, author_id=1 where id=?`, [post.title, post.description, post.id], function(error, result){
+				if(error){
+					throw error;
+				}
+				response.writeHead(302, {Location:`/?id=${post.id}`});
+				response.end();
+			})
 			
-			fs.rename(`../data/${id}`, `../data/${title}`, function(error){
-				fs.writeFile(`../data/${title}`, description, 'utf8', function(err){
-					response.writeHead(302, {Location:`/?id=${title}`});
-					response.end();
-				})
-			});
 		});
 	}
 	
@@ -171,15 +171,15 @@ var app = http.createServer(function(request,response){
 			//console.log(post.title);
 			//console.log(post.description);
 			var id = post.id;
-			var filteredId = path.parse(id).base;
-			fs.unlink(`../data/${filteredId}`, function(error){
+			db.query(`delete from topic where id=?`,[id], function(error, result){
+				if(error){
+					throw error;
+				}
 				response.writeHead(302, {Location:`/`});
 				response.end();
 			});
 		});
-		
-	}	
-	
+	}
 	else{
 		response.writeHead(404);
 		response.end('Not found');

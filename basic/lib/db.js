@@ -1,3 +1,4 @@
+//로컬이라서 ㄱㅊ
 var mysql = require('mysql');
 var db = mysql.createConnection({
 	host : 'localhost',

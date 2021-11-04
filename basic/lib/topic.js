@@ -182,6 +182,3 @@ exports.delete_process = function(request, response){
 		});
 	});
 }
-
-
-

@@ -10,6 +10,7 @@ module.exports = {
 						</head>
 						<body>
 							<h1><a href="/">WEB</a></h1>
+							<a href="/author">author</a>
 							${list}
 							${control}
 							
@@ -43,5 +44,21 @@ module.exports = {
 			i++;
 		}
 		return tag;
+	},
+	authorTable :function(authors){
+		var i = 0;
+		var table = '<table border="1">';
+		while(i<authors.length){
+			table = table + `<tr><td>${authors[i].name}</td><td>${authors[i].profile}</td><td><a href="/author/update?id=${authors[i].id}">update</a></td>
+			<td>
+				<form action="/author/delete_process" method="post">
+					<input type="hidden" name="id" value="${authors[i].id}">
+					<input type="submit" value="delete">
+				</form>
+			</td><tr>`;
+			i++;
+		}
+		table = table + '</table>';
+		return table;
 	}
 }

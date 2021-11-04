@@ -4,6 +4,7 @@ var url = require('url');
 var qs = require('querystring');
 var template = require('./lib/template.js');
 var db = require('./lib/db.js');
+var topic = require('./lib/topic');
 
 var app = http.createServer(function(request,response){
 	var _url = request.url;
@@ -12,15 +13,7 @@ var app = http.createServer(function(request,response){
 	//맨 첫 페이지 -> 아무것도 안눌렀을때
   if(pathname === '/'){
   	if(queryData.id === undefined){
-			db.query("select * from topic", function(error, topics){
-				//console.log(topics);
-				var title = 'Welcome';
-        var description = 'Hello, Node.js';
-				var list = template.list(topics);
-				var html = template.HTML(title, list, `<h2>${description}</h2>`, `<a href="/create">create</a>`);
-				response.writeHead(200);
-        response.end(html);
-			});
+			topic.home(request, response);
 		}
 		
 		//id가 존재할때

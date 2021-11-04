@@ -1,4 +1,4 @@
-//객체화 시키기
+//객체화 시키기 -> 출력부분을 담당하고 있음.
 module.exports = {
 	HTML:function(title, list, body, control){
 		return`
